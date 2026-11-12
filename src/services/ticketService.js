@@ -17,6 +17,19 @@ function guardar(ticket) {
   return ticket;
 }
 
+/**
+ * Registra la venta de un tiquete de chance.
+ *
+ * Valida que el sorteo esté abierto y dentro del horario de venta, que se
+ * envíen entre 1 y 5 apuestas y que cada apuesta cumpla las reglas del
+ * chanceService (1 a 4 cifras, valor múltiplo de 100 y dentro de los topes).
+ *
+ * @param {{ id: number, rol: string }} vendedor - Usuario autenticado que realiza la venta.
+ * @param {{ sorteoId: number, apuestas: Array<Object>, cliente?: string }} datos - Datos del tiquete.
+ * @returns {Object} Tiquete creado con código único, total y estado ACTIVO.
+ * @throws {AppError} 400 si las apuestas son inválidas, 404 si el sorteo no existe
+ *   y 409 si el sorteo no está abierto para ventas.
+ */
 function venderChance(vendedor, { sorteoId, apuestas, cliente }) {
   const sorteo = sorteos.obtener(sorteoId);
   sorteos.verificarVentaPermitida(sorteo, 'CHANCE');
@@ -88,6 +101,21 @@ function consultar(codigo) {
   };
 }
 
+/**
+ * Anula un tiquete activo y deja la trazabilidad de quién y por qué lo anuló.
+ *
+ * Reglas de negocio: un vendedor solo puede anular sus propios tiquetes y
+ * únicamente dentro de los minutos configurados en MINUTOS_ANULACION; además,
+ * no se puede anular un tiquete de un sorteo que ya fue jugado. Un ADMIN
+ * puede anular sin la restricción de tiempo, pero siempre debe indicar motivo.
+ *
+ * @param {string} codigo - Código único del tiquete (por ejemplo CH-9F2A1B3C).
+ * @param {{ id: number, rol: string }} usuario - Usuario que solicita la anulación.
+ * @param {string} motivo - Razón de la anulación.
+ * @returns {Object} Tiquete con estado ANULADO y datos de la anulación.
+ * @throws {AppError} 400 sin motivo, 403 si el tiquete es de otro vendedor,
+ *   404 si no existe y 409 si el estado o el tiempo no permiten anular.
+ */
 function anular(codigo, usuario, motivo) {
   const ticket = buscar(codigo);
 
@@ -108,6 +136,20 @@ function anular(codigo, usuario, motivo) {
   return ticket;
 }
 
+/**
+ * Paga el premio de un tiquete ganador y registra el movimiento de caja.
+ *
+ * Verifica que el sorteo ya se haya jugado, que el tiquete esté ACTIVO, que
+ * tenga premio y que no haya superado los días de caducidad configurados.
+ * Si el premio está vencido, marca el tiquete como CADUCADO antes de fallar.
+ *
+ * @param {string} codigo - Código único del tiquete.
+ * @param {{ id: number, rol: string }} usuario - Vendedor que entrega el premio.
+ * @returns {{ id: number, ticketId: number, codigo: string, usuarioId: number, valor: number, fecha: string }}
+ *   Registro del pago realizado.
+ * @throws {AppError} 404 si el tiquete no existe, 409 si el sorteo no se ha
+ *   jugado, el tiquete no tiene premio o ya fue pagado, y 410 si caducó.
+ */
 function pagarPremio(codigo, usuario) {
   const ticket = buscar(codigo);
   const sorteo = sorteos.obtener(ticket.sorteoId);

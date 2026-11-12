@@ -44,6 +44,20 @@ function verificarVentaPermitida(sorteo, tipoEsperado) {
   }
 }
 
+/**
+ * Registra el resultado oficial de un sorteo y liquida todos sus tiquetes activos.
+ *
+ * El formato del resultado depende del tipo de sorteo: para CHANCE debe ser
+ * una cadena de 4 dígitos y para BALOTO un objeto con 5 números y superbalota.
+ * Después de validar, recorre los tiquetes ACTIVOS y calcula el premio de cada
+ * apuesta o jugada.
+ *
+ * @param {number|string} id - Identificador del sorteo.
+ * @param {string|Object} resultado - Resultado oficial del sorteo.
+ * @returns {Object} Sorteo actualizado con estado JUGADO y fecha de juego.
+ * @throws {AppError} 404 si el sorteo no existe, 400 si el resultado es inválido
+ *   y 409 si el sorteo ya tenía resultado registrado.
+ */
 function registrarResultado(id, resultado) {
   const sorteo = obtener(id);
   if (sorteo.estado === 'JUGADO') throw new AppError('El sorteo ya tiene resultado', 409);

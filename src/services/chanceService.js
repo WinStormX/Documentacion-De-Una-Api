@@ -39,6 +39,18 @@ function validarApuesta(apuesta) {
   return { numero, cifras: numero.length, modalidad, valor };
 }
 
+/**
+ * Calcula el premio de una apuesta de chance según el resultado del sorteo.
+ *
+ * En modalidad DIRECTO se comparan las últimas cifras del resultado con el
+ * número apostado. En modalidad COMBINADO se generan todas las permutaciones
+ * del número y el premio se divide entre la cantidad de combinaciones.
+ *
+ * @param {{ numero: string, cifras: number, modalidad: string, valor: number }} apuesta
+ *   Apuesta previamente validada por validarApuesta().
+ * @param {string} resultado - Resultado oficial de 4 dígitos.
+ * @returns {number} Valor del premio en pesos; 0 si la apuesta no ganó.
+ */
 function calcularPremio(apuesta, resultado) {
   const ganador = resultado.slice(-apuesta.cifras);
   const factor = TABLA_PAGOS[apuesta.cifras];

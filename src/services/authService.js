@@ -4,6 +4,16 @@ const { getDb } = require('../data/store');
 const { jwtSecret, jwtExpiresIn } = require('../config');
 const AppError = require('../utils/AppError');
 
+/**
+ * Autentica a un usuario del sistema y genera un token JWT.
+ *
+ * @param {string} usuario - Nombre de usuario registrado.
+ * @param {string} password - Contraseña en texto plano enviada por el cliente.
+ * @returns {{ token: string, usuario: { id: number, usuario: string, nombre: string, rol: string } }}
+ *   Token firmado y datos públicos del usuario (sin la contraseña).
+ * @throws {AppError} 400 si falta usuario o contraseña, 401 si las credenciales
+ *   son inválidas y 403 si el usuario está inactivo.
+ */
 function login(usuario, password) {
   if (!usuario || !password) throw new AppError('Usuario y contraseña son obligatorios');
 

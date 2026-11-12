@@ -47,6 +47,18 @@ function validarJugada(jugada) {
   return { numeros: [...numeros].sort((a, b) => a - b), superbalota };
 }
 
+/**
+ * Calcula el premio de una jugada de Baloto comparando aciertos y superbalota.
+ *
+ * La tabla PREMIOS define el valor según la cantidad de aciertos (0 a 5) y si
+ * se acertó la superbalota. El premio mayor (5+1) se paga con el acumulado
+ * vigente del sorteo.
+ *
+ * @param {{ numeros: number[], superbalota: number }} jugada - Jugada validada.
+ * @param {{ numeros: number[], superbalota: number }} resultado - Resultado oficial.
+ * @param {number} [acumulado=0] - Valor acumulado para el premio mayor.
+ * @returns {number} Valor del premio en pesos; 0 si no hubo aciertos premiados.
+ */
 function calcularPremio(jugada, resultado, acumulado = 0) {
   const aciertos = jugada.numeros.filter((n) => resultado.numeros.includes(n)).length;
   const sb = jugada.superbalota === resultado.superbalota ? 1 : 0;
